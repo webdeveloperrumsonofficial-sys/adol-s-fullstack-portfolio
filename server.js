@@ -15,6 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+//tells express to send to index.html when you visit the root URL
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+
 // Email configuration
 const transporter = nodemailer.createTransport({
     service: 'gmail',
