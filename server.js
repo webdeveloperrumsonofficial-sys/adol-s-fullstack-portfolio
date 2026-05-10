@@ -15,6 +15,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+
+app.get('/api/hello', (req, res) => {
+    res.json({ status: "API is running on vercel" });
+});
+
 //tells express to send to index.html when you visit the root URL
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -102,4 +107,10 @@ server.on('error', (error) => {
     process.exit(1);
 });
 
+if(process.env.NODE_ENV === 'production') {
+   const PORT = 5001;
+   app.listen(PORT,()=>{
+    console.log(`Local server is runningo  on http://localhost:${PORT}`);   
+   });
+}
 module.exports = app;
