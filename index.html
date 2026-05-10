@@ -24,10 +24,10 @@
             <nav id="nav" class="closed" aria-label="Primary navigation">
                 <ul>
                     <li><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Skills</a></li>
-                    <li><a href="#">Projects</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#contact">Contact</a></li>
                 </ul>
             </nav>
         </div>
@@ -176,23 +176,23 @@
                 <h3>Personal Portfolio</h3>
                 <p>A responsive portfolio website showcasing my skills and projects, built with HTML, CSS, and JavaScript.</p>
                 <div class="project-links">
-                    <a href="https://github.com/adolfubara/portfolio" target="_blank" rel="noopener">GitHub</a>
-                    <a href="#" target="_blank" rel="noopener">Live Demo</a>
+                    <a href="https://github.com/webdeveloperrumsonofficial-sys/adol-s-fullstack-portfolio/" target="_blank" rel="noopener">GitHub</a>
+                    <a href="https://webdeveloperrumsonofficial-sys.github.io/adol-s-fullstack-portfolio/" target="_blank" rel="noopener">Live Demo</a>
                 </div>
             </article>
             <article class="project-card">
-                <img src="https://via.placeholder.com/400x300/7c3aed/ffffff?text=E-commerce+App" alt="E-commerce App">
-                <h3>E-commerce Platform</h3>
-                <p>A full-stack e-commerce application with user authentication, product management, and payment integration.</p>
+                <img src="./assets/images/php.png" alt="Rural Crisis settlement App">
+                <h3>Rural Crisis Settlement System</h3>
+                <p>A Rural Crisis Settlement System application with user authentication, Community management, Settlement integration.</p>
                 <div class="project-links">
-                    <a href="https://github.com/adolfubara/ecommerce-app" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://ecommerce-demo.netlify.app" target="_blank" rel="noopener">Live Demo</a>
+                    <a href="https://webdeveloperrumsonofficial-sys.github.io/crisis-settlement-system/" target="_blank" rel="noopener">GitHub</a>
+                    <a href="https://webdeveloperrumsonofficial-sys.github.io/crisis-settlement-system/" target="_blank" rel="noopener">Live Demo</a>
                 </div>
             </article>
             <article class="project-card">
-                <img src="https://via.placeholder.com/400x300/4338ca/ffffff?text=Task+Manager" alt="Task Manager">
-                <h3>Task Management App</h3>
-                <p>A collaborative task management tool with real-time updates, built using React and Node.js.</p>
+                <img src="./assets/images/security.png" alt="Task Manager">
+                <h3>Campus Security System</h3>
+                <p>A Security System that ensures safety within campus environment built with php and mysql</p>
                 <div class="project-links">
                     <a href="https://github.com/adolfubara/task-manager" target="_blank" rel="noopener">GitHub</a>
                     <a href="https://task-manager-demo.herokuapp.com" target="_blank" rel="noopener">Live Demo</a>
@@ -211,12 +211,13 @@
                 <p><span class="contact-icon" style="color: #f59e0b;"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg></span> Port Harcourt, Nigeria</p>
             </div>
             <div class="contact-form">
-                <form action="https://formspree.io/f/xpznqkgb" method="POST">
+                <form id="contactForm">
                     <h3>Send us a message now!</h3>
                     <input type="text" name="name" placeholder="Your Name" required>
                     <input type="email" name="email" placeholder="Your Email" required>
                     <textarea name="message" placeholder="Your Message" required></textarea>
-                    <button type="submit">Send me a message now!</button>
+                    <button type="submit" id="submitBtn">Send me a message now!</button>
+                    <div id="formMessage" style="margin-top: 10px; display: none;"></div>
                 </form>
             </div>
         </div>
@@ -254,17 +255,62 @@
             });
         });
 
-// const navToggle = document.getElementById('nav-toggle');
-//         const nav = document.getElementById('nav');
+        // Contact form handler
+        const contactForm = document.getElementById('contactForm');
+        const formMessage = document.getElementById('formMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const backendOrigin = 'http://localhost:5001';
+        const apiUrl = window.location.origin === backendOrigin ? '/api/contact' : `${backendOrigin}/api/contact`;
 
-//         navToggle.addEventListener('click', () => {
-//             const isOpen = nav.classList.toggle('opened');
-//             nav.classList.toggle('closed', !isOpen);
-//             navToggle.classList.toggle('active', isOpen);
-//             navToggle.setAttribute('aria-expanded', String(isOpen));
-//         });
+        if (contactForm) {
+            contactForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
+                const formData = new FormData(contactForm);
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    message: formData.get('message')
+                };
 
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Sending...';
+                    formMessage.style.display = 'none';
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const contentType = response.headers.get('content-type') || '';
+                    const result = contentType.includes('application/json')
+                        ? await response.json()
+                        : { error: await response.text() };
+
+                    if (response.ok) {
+                        formMessage.style.color = '#10b981';
+                        formMessage.textContent = '✓ Message sent successfully! Check your email for confirmation.';
+                        contactForm.reset();
+                    } else {
+                        formMessage.style.color = '#ef4444';
+                        formMessage.textContent = '✗ ' + (result.error || `Server responded with status ${response.status}`);
+                        console.error('Non-JSON response:', result.error);
+                    }
+                } catch (error) {
+                    formMessage.style.color = '#ef4444';
+                    formMessage.textContent = '✗ Error: ' + error.message;
+                    console.error('Error:', error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send me a message now!';
+                    formMessage.style.display = 'block';
+                }
+            });
+        }
     </script>
 </body>
 </html>       
