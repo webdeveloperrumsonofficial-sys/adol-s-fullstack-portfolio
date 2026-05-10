@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -261,331 +260,15 @@
         const formMessage = document.getElementById('formMessage');
         const submitBtn = document.getElementById('submitBtn');
         const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        // Replace with your deployed API URL (e.g., https://your-project.vercel.app)
+        const deployedApiUrl = 'https://your-project-name.vercel.app/api/contact';
         const formspreeUrl = 'https://formspree.io/f/xpznqkgb';
 
         if (contactForm) {
             contactForm.method = 'POST';
-            contactForm.action = usingLocalBackend ? '/api/contact' : formspreeUrl;
+            // Always use deployed API for now, fallback to Formspree if API fails
+            contactForm.action = deployedApiUrl;
 
-            if (usingLocalBackend) {
-                contactForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-
-                    const formData = new FormData(contactForm);
-                    const data = {
-                        name: formData.get('name'),
-                        email: formData.get('email'),
-                        message: formData.get('message')
-                    };
-
-                    try {
-                        submitBtn.disabled = true;
-                        submitBtn.textContent = 'Sending...';
-                        formMessage.style.display = 'none';
-
-                        const response = await fetch('/api/contact', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(data)
-                        });
-
-                        const contentType = response.headers.get('content-type') || '';
-                        const result = contentType.includes('application/json')
-                            ? await response.json()
-                            : { error: await response.text() };
-
-                        if (response.ok) {
-                            formMessage.style.color = '#10b981';
-                            formMessage.textContent = '✓ Message sent successfully! Check your email for confirmation.';
-                            contactForm.reset();
-                        } else {
-                            formMessage.style.color = '#ef4444';
-                            formMessage.textContent = '✗ ' + (result.error || `Server responded with status ${response.status}`);
-                            console.error('Non-JSON response:', result.error);
-                        }
-                    } catch (error) {
-                        formMessage.style.color = '#ef4444';
-                        formMessage.textContent = '✗ Error: ' + error.message;
-                        console.error('Error:', error);
-                    } finally {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Send me a message now!';
-                        formMessage.style.display = 'block';
-                    }
-                });
-            }
-        }
-    </script>
-</body>
-</html>       
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adol's Portfolio</title>
-
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-
-    <section id="header">
-        <div id="header-content">
-            <div id="logo">
-                <h1>Fullstack developer</h1>
-            </div>
-
-            <button id="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <nav id="nav" class="closed" aria-label="Primary navigation">
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#skills">Skills</a></li>
-                    <li><a href="#projects">Projects</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </section>
-
-
-    <section id="hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <p class="hero-label">Hello, I’m</p>
-            <h2>Adol Fubara Egbono</h2>
-            <p class="hero-title">Full Stack Developer</p>
-            <p class="hero-copy">I design and build modern web applications with clean UI, fast performance, and scalable code. Let’s bring your next digital idea to life with quality and care.</p>
-
-            <div class="hero-actions">
-                <a class="btn btn-primary" href="#projects">View Projects</a>
-                <a class="btn btn-secondary" href="#contact">Get in Touch</a>
-            </div>
-
-            <div class="hero-social">
-                <span>Connect with me</span>
-                <div class="social-links">
-                    <a href="#" aria-label="LinkedIn">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.49 6S0 4.88 0 3.5 1.12 1 2.49 1 4.98 2.12 4.98 3.5zM0 24h4.98V7.98H0V24zm7.53-16.02h4.77v2.22h.07c.67-1.28 2.3-2.63 4.73-2.63 5.06 0 6 3.33 6 7.66V24h-4.98v-7.44c0-1.77-.03-4.05-2.47-4.05-2.48 0-2.86 1.94-2.86 3.94V24H7.53V7.98z" fill="currentColor"/></svg>
-                    </a>
-                    <a href="#" aria-label="GitHub">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.21 11.42c.6.11.82-.26.82-.58 0-.29-.01-1.05-.01-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.38-1.35-1.75-1.35-1.75-1.1-.75.08-.73.08-.73 1.22.09 1.86 1.25 1.86 1.25 1.08 1.84 2.84 1.31 3.54 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.62-2.8 5.64-5.47 5.94.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.21.7.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z" fill="currentColor"/></svg>
-                    </a>
-                    <a href="#" aria-label="Twitter">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 4.56a9.94 9.94 0 01-2.83.78 4.94 4.94 0 002.17-2.72 9.86 9.86 0 01-3.13 1.2 4.92 4.92 0 00-8.4 4.48A13.97 13.97 0 011.67 3.15a4.92 4.92 0 001.52 6.56 4.9 4.9 0 01-2.23-.62v.06c0 2.28 1.62 4.18 3.77 4.61a4.92 4.92 0 01-2.21.08 4.93 4.93 0 004.6 3.42A9.87 9.87 0 010 19.54a13.94 13.94 0 007.55 2.21c9.05 0 14.01-7.5 14.01-14.01 0-.21 0-.43-.01-.64A10.02 10.02 0 0024 4.56z" fill="currentColor"/></svg>
-                    </a>
-                </div>
-            </div>
-
-            <a href="#projects" class="hero-scroll" aria-label="Scroll to projects">
-                <span>Scroll to projects</span>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16.5l-6-6 1.4-1.4L12 13.7l4.6-4.6L18 10.5z" fill="currentColor"/></svg>
-            </a>
-        </div>
-    </section>
-
-    <section id="about">
-        <h2>About Me</h2>
-        <div class="about-content">
-            <div class="about-image">
-                <img src="./assets/images/about.jpeg" alt="Adol Fubara Egbono portrait">
-            </div>
-            <div class="about-text">
-                <p class="section-label">About me</p>
-                <h3>Building modern web experiences with clarity and care</h3>
-                <p>I am a full stack developer who loves turning ideas into polished, responsive websites and apps. I focus on clean UI, strong performance, and scalable code that works seamlessly across devices.</p>
-                <ul class="about-list">
-                    <li>Responsive interface design for every screen size</li>
-                    <li>Front-end development with modern JavaScript and CSS</li>
-                    <li>Back-end services, APIs, and database-driven apps</li>
-                </ul>
-                <a href="#contact" class="btn btn-primary">Let's talk</a>
-            </div>
-        </div>
-    </section>
-
-
-    <section id="skills">
-        <h2>Skills & Expertise</h2>
-        <div class="skills-grid">
-            <article class="skill-card">
-                <h3><span class="skill-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h16v2H4v-2z" fill="currentColor"/></svg></span>Frontend</h3>
-                <div class="skill-item">
-                    <div><span>HTML</span><span>90%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 90%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>CSS</span><span>90%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 90%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>JavaScript</span><span>60%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 60%;"></div></div>
-                </div>
-            </article>
-            <article class="skill-card">
-                <h3><span class="skill-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l7.53 3.77L12 11.72 4.47 7.95 12 4.18zM4 8.92l7 3.5v7.16L4 16.08V8.92zm9 10.66v-7.16l7-3.5v7.16l-7 3.5z" fill="currentColor"/></svg></span>Frameworks</h3>
-                <div class="skill-item">
-                    <div><span>React</span><span>70%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 70%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>Bootstrap</span><span>90%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 90%;"></div></div>
-                </div>
-            </article>
-            <article class="skill-card">
-                <h3><span class="skill-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v5H4V6zm0 7h7v5H4v-5zm9 0h7v5h-7v-5z" fill="currentColor"/></svg></span>Backend</h3>
-                <div class="skill-item">
-                    <div><span>PHP</span><span>80%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 80%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>Node.js</span><span>70%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 70%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>Express.js</span><span>60%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 60%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>TypeScript</span><span>50%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 50%;"></div></div>
-                </div>
-            </article>
-            <article class="skill-card">
-                <h3><span class="skill-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2C7.60 2 4 3.79 4 6s3.60 4 8 4 8-1.79 8-4-3.60-4-8-4zm0 6C8.69 8 6 7.11 6 6s2.69-2 6-2 6 0.89 6 2-2.69 2-6 2zm0 2c4.40 0 8 1.34 8 3v5c0 2.21-3.58 4-8 4s-8-1.79-8-4v-5c0-1.66 3.60-3 8-3zm0 2c-3.31 0-6 0.78-6 1.75V16c0 0.83 2.69 2 6 2s6-1.17 6-2v-1.25C18 12.78 15.31 12 12 12z" fill="currentColor"/></svg></span>Database & Tools</h3>
-                <div class="skill-item">
-                    <div><span>MySQL</span><span>90%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 90%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>PostgreSQL</span><span>50%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 50%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>MongoDB</span><span>50%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 50%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>APIs</span><span>40%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 40%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>Git</span><span>60%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 60%;"></div></div>
-                </div>
-                <div class="skill-item">
-                    <div><span>Figma</span><span>90%</span></div>
-                    <div class="skill-bar"><div class="skill-bar-fill" style="width: 90%;"></div></div>
-                </div>
-            </article>
-        </div>
-    </section>
-
-    <section id="projects">
-        <h2>Projects</h2>
-        <div class="projects-grid">
-            <article class="project-card">
-                <img src="./assets/images/portfolio.PNG" alt="Portfolio Project">
-                <h3>Personal Portfolio</h3>
-                <p>A responsive portfolio website showcasing my skills and projects, built with HTML, CSS, and JavaScript.</p>
-                <div class="project-links">
-                    <a href="https://github.com/webdeveloperrumsonofficial-sys/adol-s-fullstack-portfolio/" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://webdeveloperrumsonofficial-sys.github.io/adol-s-fullstack-portfolio/" target="_blank" rel="noopener">Live Demo</a>
-                </div>
-            </article>
-            <article class="project-card">
-                <img src="./assets/images/php.png" alt="Rural Crisis settlement App">
-                <h3>Rural Crisis Settlement System</h3>
-                <p>A Rural Crisis Settlement System application with user authentication, Community management, Settlement integration.</p>
-                <div class="project-links">
-                    <a href="https://webdeveloperrumsonofficial-sys.github.io/crisis-settlement-system/" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://webdeveloperrumsonofficial-sys.github.io/crisis-settlement-system/" target="_blank" rel="noopener">Live Demo</a>
-                </div>
-            </article>
-            <article class="project-card">
-                <img src="./assets/images/security.png" alt="Task Manager">
-                <h3>Campus Security System</h3>
-                <p>A Security System that ensures safety within campus environment built with php and mysql</p>
-                <div class="project-links">
-                    <a href="https://github.com/adolfubara/task-manager" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://task-manager-demo.herokuapp.com" target="_blank" rel="noopener">Live Demo</a>
-                </div>
-            </article>
-        </div>
-    </section>
-
-    <section id="contact">
-        <h2>Get in Touch</h2>
-        <div class="contact-content">
-            <div class="contact-info">
-                
-                <p><span class="contact-icon" style="color: #4f46e5;"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/></svg></span> webdeveloper.rumson.official@gmail.com</p>
-                <p><span class="contact-icon" style="color: #10b981;"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="currentColor"/></svg></span> 07048620793</p>
-                <p><span class="contact-icon" style="color: #f59e0b;"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg></span> Port Harcourt, Nigeria</p>
-            </div>
-            <div class="contact-form">
-                <form id="contactForm">
-                    <h3>Send us a message now!</h3>
-                    <input type="text" name="name" placeholder="Your Name" required>
-                    <input type="email" name="email" placeholder="Your Email" required>
-                    <textarea name="message" placeholder="Your Message" required></textarea>
-                    <button type="submit" id="submitBtn">Send me a message now!</button>
-                    <div id="formMessage" style="margin-top: 10px; display: none;"></div>
-                </form>
-            </div>
-        </div>
-    </section>
-
-
-
-
-    <section id="footer">
-        <p>&copy; 2026 Adol Fubara Egbono. All rights reserved.</p>
-    </section>
-
-    <script>
-        const navToggle = document.getElementById('nav-toggle');
-        const nav = document.getElementById('nav');
-        const navLinks = nav.querySelectorAll('a');
-
-        function setNavState(open) {
-            nav.classList.toggle('opened', open);
-            nav.classList.toggle('closed', !open);
-            navToggle.classList.toggle('active', open);
-            navToggle.setAttribute('aria-expanded', String(open));
-        }
-
-        navToggle.addEventListener('click', () => {
-            const isOpen = nav.classList.contains('opened');
-            setNavState(!isOpen);
-        });
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 780) {
-                    setNavState(false);
-                }
-            });
-        });
-
-        // Contact form handler
-        const contactForm = document.getElementById('contactForm');
-        const formMessage = document.getElementById('formMessage');
-        const submitBtn = document.getElementById('submitBtn');
-        const backendOrigin = 'http://localhost:5001';
-        const apiUrl = window.location.origin === backendOrigin ? '/api/contact' : `${backendOrigin}/api/contact`;
-
-        if (contactForm) {
             contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -601,7 +284,8 @@
                     submitBtn.textContent = 'Sending...';
                     formMessage.style.display = 'none';
 
-                    const response = await fetch(apiUrl, {
+                    // Try deployed API first
+                    let response = await fetch(deployedApiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -609,10 +293,22 @@
                         body: JSON.stringify(data)
                     });
 
+                    // If deployed API fails, fallback to Formspree
+                    if (!response.ok && !usingLocalBackend) {
+                        console.log('Deployed API failed, falling back to Formspree');
+                        response = await fetch(formspreeUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: new URLSearchParams(data)
+                        });
+                    }
+
                     const contentType = response.headers.get('content-type') || '';
                     const result = contentType.includes('application/json')
                         ? await response.json()
-                        : { error: await response.text() };
+                        : { message: await response.text() };
 
                     if (response.ok) {
                         formMessage.style.color = '#10b981';
@@ -620,13 +316,31 @@
                         contactForm.reset();
                     } else {
                         formMessage.style.color = '#ef4444';
-                        formMessage.textContent = '✗ ' + (result.error || `Server responded with status ${response.status}`);
-                        console.error('Non-JSON response:', result.error);
+                        formMessage.textContent = '✗ ' + (result.error || result.message || `Server responded with status ${response.status}`);
                     }
                 } catch (error) {
-                    formMessage.style.color = '#ef4444';
-                    formMessage.textContent = '✗ Error: ' + error.message;
-                    console.error('Error:', error);
+                    // Final fallback to Formspree
+                    try {
+                        const fallbackResponse = await fetch(formspreeUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: new URLSearchParams(data)
+                        });
+
+                        if (fallbackResponse.ok) {
+                            formMessage.style.color = '#10b981';
+                            formMessage.textContent = '✓ Message sent successfully via backup service!';
+                            contactForm.reset();
+                        } else {
+                            throw new Error('All services failed');
+                        }
+                    } catch (fallbackError) {
+                        formMessage.style.color = '#ef4444';
+                        formMessage.textContent = '✗ Error: Unable to send message. Please try again later.';
+                        console.error('All contact methods failed:', error, fallbackError);
+                    }
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Send me a message now!';
@@ -637,4 +351,3 @@
     </script>
 </body>
 </html>       
->>>>>>> 18a6fffe18a1e69b938a16e09c4d4550b25b5853
