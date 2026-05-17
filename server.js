@@ -15,24 +15,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-
 app.get('/api/hello', (req, res) => {
     res.json({ status: "API is running on vercel" });
 });
 
-//tells express to send to index.html when you visit the root URL
+// Tells express to send index.html when you visit the root URL
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-
-// Email configuration
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
 });
 
 // Contact form endpoint
@@ -45,11 +34,20 @@ app.post('/api/contact', async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
+        // Email configuration (Moved inside the route handler so process.env reads accurately)
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD // Your 16-character Google App Password
+            }
+        });
+
         // Email to admin
         const adminMailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.EMAIL_USER,
-            subject: `New Contact Form Submission from ${name}`,
+            subject: New Contact Form Submission from ${name},
             html: `
                 <h2>New Message from Your Portfolio</h2>
                 <p><strong>Name:</strong> ${name}</p>
@@ -77,14 +75,15 @@ app.post('/api/contact', async (req, res) => {
         await transporter.sendMail(adminMailOptions);
         await transporter.sendMail(visitorMailOptions);
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Message sent successfully!' 
+        res.status(200).json({
+            success: true,
+            message: 'Message sent successfully!'
         });
+
     } catch (error) {
         console.error('Error sending email:', error);
-        res.status(500).json({ 
-            error: 'Failed to send message. Please try again later.' 
+        res.status(500).json({
+            error: 'Failed to send message. Please try again later.'
         });
     }
 });
@@ -95,22 +94,23 @@ app.get('/api/health', (req, res) => {
 });
 
 const server = app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(Server running on http://localhost:${PORT});
 });
 
 server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Stop the existing server or change PORT in .env.`);
+        console.error(Port ${PORT} is already in use. Stop the existing server or change PORT in .env.);
     } else {
         console.error('Server error:', error);
     }
     process.exit(1);
 });
 
-if(process.env.NODE_ENV === 'production') {
-   const PORT = 5001;
-   app.listen(PORT,()=>{
-    console.log(`Local server is runningo  on http://localhost:${PORT}`);   
-   });
+if (process.env.NODE_ENV === 'production') {
+    const PORT = 5001;
+    app.listen(PORT, () => {
+        console.log(Local server is running on http://localhost:${PORT});
+    });
 }
+
 module.exports = app;
