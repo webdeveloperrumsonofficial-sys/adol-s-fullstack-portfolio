@@ -40,11 +40,11 @@ app.post('/api/contact', async (req, res) => {
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD // Make sure this matches your Vercel Config Key!
+                pass: process.env.EMAIL_PASSWORD
             }
         });
 
-        // Email to admin
+        // Email to admin (FIXED: Uses backticks consistently to prevent the crash)
         const adminMailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.EMAIL_USER,
@@ -94,7 +94,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running' });
 });
 
-// // Local development listener management
+// // Local development listener management - Only listens if NOT on Vercel production
 if (process.env.NODE_ENV !== 'production') {
     const server = app.listen(PORT, () => {
         console.log(Local server running on http://localhost:${PORT});
