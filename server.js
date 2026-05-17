@@ -15,11 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+// API Check Route
 app.get('/api/hello', (req, res) => {
     res.json({ status: "API is running on vercel" });
 });
 
-// Tells express to send index.html when you visit the root URL
+// Serve frontend home page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -34,12 +35,12 @@ app.post('/api/contact', async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        // Email configuration (Moved inside the route handler so process.env reads accurately)
+        // Email configuration (Moved inside the route so it safely initializes with process.env keys)
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD // Your 16-character Google App Password
+                pass: process.env.EMAIL_PASSWORD // Make sure this matches your Vercel Config Key!
             }
         });
 
@@ -71,28 +72,30 @@ app.post('/api/contact', async (req, res) => {
             `
         };
 
-        // Send emails
+        // Send both emails simultaneously
         await transporter.sendMail(adminMailOptions);
         await transporter.sendMail(visitorMailOptions);
 
-        res.status(200).json({
+        // Success response back to your combined frontend code
+        return res.status(200).json({
             success: true,
             message: 'Message sent successfully!'
         });
 
     } catch (error) {
         console.error('Error sending email:', error);
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Failed to send message. Please try again later.'
         });
     }
 });
 
-// Health check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running' });
 });
 
+// Local development listener management
 const server = app.listen(PORT, () => {
     console.log(Server running on http://localhost:${PORT});
 });
@@ -107,9 +110,9 @@ server.on('error', (error) => {
 });
 
 if (process.env.NODE_ENV === 'production') {
-    const PORT = 5001;
-    app.listen(PORT, () => {
-        console.log(Local server is running on http://localhost:${PORT});
+    const PROD_PORT = 5001;
+    app.listen(PROD_PORT, () => {
+        console.log(Local server is running on http://localhost:${PROD_PORT});
     });
 }
 
