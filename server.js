@@ -9,23 +9,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+// // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// API Check Route
+// // API Check Route
 app.get('/api/hello', (req, res) => {
     res.json({ status: "API is running on vercel" });
 });
 
-// Serve frontend home page
+// // Serve frontend home page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Contact form endpoint
+// // Contact form endpoint
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, message } = req.body;
@@ -35,7 +35,7 @@ app.post('/api/contact', async (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        // Email configuration (Moved inside the route so it safely initializes with process.env keys)
+        // Email configuration
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -76,7 +76,6 @@ app.post('/api/contact', async (req, res) => {
         await transporter.sendMail(adminMailOptions);
         await transporter.sendMail(visitorMailOptions);
 
-        // Success response back to your combined frontend code
         return res.status(200).json({
             success: true,
             message: 'Message sent successfully!'
@@ -90,30 +89,26 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// Health check endpoint
+// // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running' });
 });
 
-// Local development listener management
-const server = app.listen(PORT, () => {
-    console.log(Server running on http://localhost:${PORT});
-});
+// // Local development listener management
+if (process.env.NODE_ENV !== 'production') {
+    const server = app.listen(PORT, () => {
+        console.log(Local server running on http://localhost:${PORT});
+    });
 
-server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-        console.error(Port ${PORT} is already in use. Stop the existing server or change PORT in .env.);
-    } else {
-        console.error('Server error:', error);
-    }
-    process.exit(1);
-});
-
-if (process.env.NODE_ENV === 'production') {
-    const PROD_PORT = 5001;
-    app.listen(PROD_PORT, () => {
-        console.log(Local server is running on http://localhost:${PROD_PORT});
+    server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+            console.error(Port ${PORT} is already in use. Stop the existing server or change PORT in .env.);
+        } else {
+            console.error('Server error:', error);
+        }
+        process.exit(1);
     });
 }
 
+// // Crucial export for Vercel Serverless Functions
 module.exports = app;
