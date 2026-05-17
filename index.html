@@ -255,100 +255,111 @@
             });
         });
 
-        // Contact form handler
-        const contactForm = document.getElementById('contactForm');
-        const formMessage = document.getElementById('formMessage');
-        const submitBtn = document.getElementById('submitBtn');
-        const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        // Replace with your deployed API URL (e.g., https://your-project.vercel.app)
-        const deployedApiUrl = 'https://adol-s-fullstack-portfolio.vercel.app/api/contact';
-        const formspreeUrl = 'https://formspree.io/f/xbdbregb';
+       // Contact form handler
+const contactForm = document.getElementById('contactForm');
+const formMessage = document.getElementById('formMessage');
+const submitBtn = document.getElementById('submitBtn');
 
-        if (contactForm) {
-            contactForm.method = 'POST';
-            // Always use deployed API for now, fallback to Formspree if API fails
-            contactForm.action = deployedApiUrl;
+const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// Replace with your deployed API URL (e.g., https://your-project.vercel.app)
+const deployedApiUrl = 'https://adol-s-fullstack-portfolio.vercel.app/api/contact';
+// Paste your brand-new Formspree ID right here inside the single quotes
+const formspreeUrl = 'https://formspree.io/f/xbdbregb'; 
 
-            contactForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+if (contactForm) {
+    contactForm.method = 'POST';
+    // Always use deployed API for now, fallback to Formspree if API fails
+    contactForm.action = deployedApiUrl;
 
-                const formData = new FormData(contactForm);
-                const data = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    message: formData.get('message')
-                };
-                const searchParams = new URLSearchParams();
-                formData.forEach((value, key) =>{searchParams.append(key, value);});
-                try {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Sending...';
-                    formMessage.style.display = 'none';
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-                    // Try deployed API first
-                    let response = await fetch(deployedApiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(Object.fromEntries(formData))
-                    });
+        const formData = new FormData(contactForm);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message')
+        };
 
-                    // If deployed API fails, fallback to Formspree
-                    if (!response.ok && !usingLocalBackend) {
-                        console.log('Deployed API failed, falling back to Formspree');
-                        response = await fetch(formspreeUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: new URLSearchParams(data)
-                        });
-                    }
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
 
-                    const contentType = response.headers.get('content-type') || '';
-                    const result = contentType.includes('application/json')
-                        ? await response.json()
-                        : { message: await response.text() };
+            // --- BUG FIX 1: Send the initial fetch to your backend API first ---
+            let response;
+            try {
+                response = await fetch(usingLocalBackend ? '/api/contact' : deployedApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch (networkError) {
+                // If backend server is totally down, force a fake failed response to hit fallback
+                response = { ok: false };
+            }
 
-                    if (response.ok) {
-                        formMessage.style.color = '#10b981';
-                        formMessage.textContent = '✓ Message sent successfully! Check your email for confirmation.';
-                        contactForm.reset();
-                    } else {
-                        formMessage.style.color = '#ef4444';
-                        formMessage.textContent = '✗ ' + (result.error || result.message || `Server responded with status ${response.status}`);
-                    }
-                } catch (error) {
-                    // Final fallback to Formspree
-                    try {
-                        const fallbackResponse = await fetch(formspreeUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: new URLSearchParams(data)
-                        });
+            // --- BUG FIX 2: Your fallback logic block now safely checks the response ---
+            if (!response.ok && !usingLocalBackend) {
+                console.log('Deployed API failed, falling back to Formspree');
+                
+                // Formspree expects a URLSearchParams string format
+                const formspreeData = new URLSearchParams(data);
 
-                        if (fallbackResponse.ok) {
-                            formMessage.style.color = '#10b981';
-                            formMessage.textContent = '✓ Message sent successfully via backup service!';
-                            contactForm.reset();
-                        } else {
-                            throw new Error('All services failed');
-                        }
-                    } catch (fallbackError) {
-                        formMessage.style.color = '#ef4444';
-                        formMessage.textContent = '✗ Error: Unable to send message. Please try again later.';
-                        console.error('All contact methods failed:', error, fallbackError);
-                    }
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Send me a message now!';
-                    formMessage.style.display = 'block';
+                response = await fetch(formspreeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formspreeData
+                });
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            const result = contentType.includes('application/json')
+                ? await response.json()
+                : { message: await response.text() };
+
+            if (response.ok) {
+                formMessage.style.color = '#10b981';
+                formMessage.textContent = '✓ Message sent successfully! Check your email for confirmation.';
+                contactForm.reset();
+            } else {
+                formMessage.style.color = '#ef4444';
+                formMessage.textContent = 'X ' + (result.error || result.message || Server responded with status ${response.status});
+            }
+        } catch (error) {
+            // Final fallback to Formspree if everything else unexpected shattered
+            try {
+                const formspreeData = new URLSearchParams(data);
+                const fallbackResponse = await fetch(formspreeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formspreeData
+                });
+
+                if (fallbackResponse.ok) {
+                    formMessage.style.color = '#10b981';
+                    formMessage.textContent = '✓ Message sent successfully via backup service!';
+                    contactForm.reset();
+                } else {
+                    throw new Error('All services failed');
                 }
-            });
+            } catch (fallbackError) {
+                formMessage.style.color = '#ef4444';
+                formMessage.textContent = 'X Error: Unable to send message. Please try again later.';
+                console.error('All contact methods failed:', error, fallbackError);
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send me a message now!';
+            formMessage.style.display = 'block';
         }
+    });
+}
     </script>
 </body>
 </html>       
