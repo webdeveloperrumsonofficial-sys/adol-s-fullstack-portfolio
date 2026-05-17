@@ -256,20 +256,18 @@
             });
         });
 
-       // Contact form handler
+     // Contact form handler
 const contactForm = document.getElementById('contactForm');
 const formMessage = document.getElementById('formMessage');
 const submitBtn = document.getElementById('submitBtn');
 
 const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-// Replace with your deployed API URL (e.g., https://your-project.vercel.app)
 const deployedApiUrl = 'https://adol-s-fullstack-portfolio.vercel.app/api/contact';
-// Paste your brand-new Formspree ID right here inside the single quotes
+// Ensure this Formspree ID is updated and active inside your dashboard!
 const formspreeUrl = 'https://formspree.io/f/xbdbregb'; 
 
 if (contactForm) {
     contactForm.method = 'POST';
-    // Always use deployed API for now, fallback to Formspree if API fails
     contactForm.action = deployedApiUrl;
 
     contactForm.addEventListener('submit', async (e) => {
@@ -286,10 +284,12 @@ if (contactForm) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
 
-            // --- BUG FIX 1: Send the initial fetch to your backend API first ---
             let response;
+            const targetApiUrl = usingLocalBackend ? '/api/contact' : deployedApiUrl;
+            
+            // --- Primary Strategy: Send to Node.js Backend ---
             try {
-                response = await fetch(usingLocalBackend ? '/api/contact' : deployedApiUrl, {
+                response = await fetch(targetApiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -297,30 +297,30 @@ if (contactForm) {
                     body: JSON.stringify(data)
                 });
             } catch (networkError) {
-                // If backend server is totally down, force a fake failed response to hit fallback
+                console.log('Backend completely unreachable. Forcing fallback mode.');
                 response = { ok: false };
             }
 
-            // --- BUG FIX 2: Your fallback logic block now safely checks the response ---
+            // --- Secondary Strategy: Fallback to Formspree if Backend Failed ---
             if (!response.ok && !usingLocalBackend) {
-                console.log('Deployed API failed, falling back to Formspree');
+                console.log('Backend API responded with an error or timed out. Falling back to Formspree...');
                 
-                // Formspree expects a URLSearchParams string format
                 const formspreeData = new URLSearchParams(data);
-
                 response = await fetch(formspreeUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
                     },
                     body: formspreeData
                 });
             }
 
-            const contentType = response.headers.get('content-type') || '';
+            // Process headers safely depending on which service fulfilled the request
+            const contentType = response.headers ? response.headers.get('content-type') || '' : '';
             const result = contentType.includes('application/json')
                 ? await response.json()
-                : { message: await response.text() };
+                : { message: response.text ? await response.text() : 'Service complete' };
 
             if (response.ok) {
                 formMessage.style.color = '#10b981';
@@ -328,31 +328,33 @@ if (contactForm) {
                 contactForm.reset();
             } else {
                 formMessage.style.color = '#ef4444';
-                formMessage.textContent = 'X ' + (result.error || result.message || Server responded with status ${response.status});
+                formMessage.textContent = 'X ' + (result.error || result.message || Server error status: ${response.status});
             }
+
         } catch (error) {
-            // Final fallback to Formspree if everything else unexpected shattered
+            // --- Final Catchall: If an unexpected JavaScript exception broke execution flow ---
             try {
                 const formspreeData = new URLSearchParams(data);
-                const fallbackResponse = await fetch(formspreeUrl, {
+                const ultimateFallback = await fetch(formspreeUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
                     },
                     body: formspreeData
                 });
 
-                if (fallbackResponse.ok) {
+                if (ultimateFallback.ok) {
                     formMessage.style.color = '#10b981';
-                    formMessage.textContent = '✓ Message sent successfully via backup service!';
+                    formMessage.textContent = '✓ Message successfully dispatched via emergency Formspree route!';
                     contactForm.reset();
                 } else {
-                    throw new Error('All services failed');
+                    throw new Error('All systems failed');
                 }
             } catch (fallbackError) {
                 formMessage.style.color = '#ef4444';
-                formMessage.textContent = 'X Error: Unable to send message. Please try again later.';
-                console.error('All contact methods failed:', error, fallbackError);
+                formMessage.textContent = 'X Error: All messaging routing options failed. Try again later.';
+                console.error('Total communication breakdown:', error, fallbackError);
             }
         } finally {
             submitBtn.disabled = false;
