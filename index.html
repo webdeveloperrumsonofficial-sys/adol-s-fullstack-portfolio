@@ -262,7 +262,7 @@
         const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         // Replace with your deployed API URL (e.g., https://your-project.vercel.app)
         const deployedApiUrl = 'https://adol-s-fullstack-portfolio.vercel.app/api/contact';
-        const formspreeUrl = 'https://formspree.io/f/xpznqkgb';
+        const formspreeUrl = 'https://formspree.io/f/xbdbregb';
 
         if (contactForm) {
             contactForm.method = 'POST';
@@ -278,7 +278,8 @@
                     email: formData.get('email'),
                     message: formData.get('message')
                 };
-
+                const searchParams = new URLSearchParams();
+                formData.forEach((value, key) =>{searchParams.append(key, value);});
                 try {
                     submitBtn.disabled = true;
                     submitBtn.textContent = 'Sending...';
@@ -290,7 +291,7 @@
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(Object.fromEntries(formData))
                     });
 
                     // If deployed API fails, fallback to Formspree
