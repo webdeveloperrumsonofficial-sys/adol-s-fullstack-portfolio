@@ -44,7 +44,7 @@ app.post('/api/contact', async (req, res) => {
             }
         });
 
-        // Email to admin (FIXED: Uses backticks consistently to prevent the crash)
+        // Email to admin (FIXED: Backticks applied correctly to prevent Vercel string crash)
         const adminMailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.EMAIL_USER,
@@ -94,7 +94,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running' });
 });
 
-// // Local development listener management - Only listens if NOT on Vercel production
+// // Local development listener management (Ensures it won't crash on Vercel production)
 if (process.env.NODE_ENV !== 'production') {
     const server = app.listen(PORT, () => {
         console.log(Local server running on http://localhost:${PORT});
