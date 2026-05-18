@@ -270,52 +270,79 @@ if (contactForm) {
     contactForm.method = 'POST';
     contactForm.action = deployedApiUrl;
 
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+   contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        const formData = new FormData(contactForm);
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            message: formData.get('message')
-        };
+    const formData = new FormData(contactForm);
+    const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: formData.get('message')
+    };
 
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    let backendSuccess = false;
+
+    try {
+        // STEP 1: ALWAYS TRY NODE BACKEND FIRST
+        const response = await fetch(deployedApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            backendSuccess = true;
+
+            formMessage.style.color = '#10b981';
+            formMessage.textContent = '✓ Sent via server (Nodemailer + Gmail)';
+            contactForm.reset();
+        } else {
+            console.log('Backend failed, will try Formspree next');
+        }
+
+    } catch (err) {
+        console.log('Backend unreachable:', err);
+    }
+
+    // STEP 2: ONLY IF BACKEND FAILS → FORMPSREE
+    if (!backendSuccess) {
         try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
+            const formspreeData = new URLSearchParams(data);
 
-            let response;
-            const targetApiUrl = usingLocalBackend ? '/api/contact' : deployedApiUrl;
-            
-            // --- Primary Strategy: Send to Node.js Backend ---
-            try {
-                response = await fetch(targetApiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-            } catch (networkError) {
-                console.log('Backend completely unreachable. Forcing fallback mode.');
-                response = { ok: false };
+            const fallback = await fetch(formspreeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: formspreeData
+            });
+
+            if (fallback.ok) {
+                formMessage.style.color = '#f59e0b';
+                formMessage.textContent = '✓ Sent via Formspree fallback';
+                contactForm.reset();
+            } else {
+                throw new Error('Formspree failed');
             }
 
-            // --- Secondary Strategy: Fallback to Formspree if Backend Failed ---
-            if (!response.ok && !usingLocalBackend) {
-                console.log('Backend API responded with an error or timed out. Falling back to Formspree...');
-                
-                const formspreeData = new URLSearchParams(data);
-                response = await fetch(formspreeUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json'
-                    },
-                    body: formspreeData
-                });
-            }
+        } catch (fallbackError) {
+            formMessage.style.color = '#ef4444';
+            formMessage.textContent = '✗ Message failed on all systems';
+        }
+    }
 
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send me a message now!';
+    formMessage.style.display = 'block';
+});
             // Process headers safely depending on which service fulfilled the request
             const contentType = response.headers ? response.headers.get('content-type') || '' : '';
             const result = contentType.includes('application/json')
