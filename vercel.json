@@ -4,7 +4,7 @@
   {"src": "server.js", 
     "use": "@vercel/node",
     "config": {
-      "includeFiles": ["index.html"]
+      "includeFiles": ["index.html", "style.css"]
     }
   }
   ],
@@ -12,6 +12,18 @@
     {
       "src": "/api/(.*)",
       "dest": "server.js"
+    },
+     {
+        "src":"/(.*)",
+        "dest": "/server.js"
+    },
+    {
+      "src": "/",
+      "dest": "index.html"
+    },
+    {
+        "src": "/(.*)",
+        "dest": "/$1"
     }
     
   ]
