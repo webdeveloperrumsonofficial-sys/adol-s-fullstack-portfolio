@@ -256,113 +256,68 @@
             });
         });
 
-     // Contact form handler
 const contactForm = document.getElementById('contactForm');
 const formMessage = document.getElementById('formMessage');
 const submitBtn = document.getElementById('submitBtn');
 
-const usingLocalBackend = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const deployedApiUrl = 'https://adol-s-fullstack-portfolio.vercel.app/api/contact';
-// Ensure this Formspree ID is updated and active inside your dashboard!
-const formspreeUrl = 'https://formspree.io/f/xbdbregb'; 
+const formspreeUrl = 'https://formspree.io/f/xbdbregb';
 
 if (contactForm) {
-    contactForm.method = 'POST';
-    contactForm.action = deployedApiUrl;
 
-   contactForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const formData = new FormData(contactForm);
-    const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        message: formData.get('message')
-    };
+        const formData = new FormData(contactForm);
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message')
+        };
 
-    let backendSuccess = false;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
 
-    try {
-        // STEP 1: ALWAYS TRY NODE BACKEND FIRST
-        const response = await fetch(deployedApiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+        let backendSuccess = false;
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            backendSuccess = true;
-
-            formMessage.style.color = '#10b981';
-            formMessage.textContent = '✓ Sent via server (Nodemailer + Gmail)';
-            contactForm.reset();
-        } else {
-            console.log('Backend failed, will try Formspree next');
-        }
-
-    } catch (err) {
-        console.log('Backend unreachable:', err);
-    }
-
-    // STEP 2: ONLY IF BACKEND FAILS → FORMPSREE
-    if (!backendSuccess) {
         try {
-            const formspreeData = new URLSearchParams(data);
 
-            const fallback = await fetch(formspreeUrl, {
+            // STEP 1: NODE BACKEND (Nodemailer FIRST)
+            const response = await fetch(deployedApiUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/json'
                 },
-                body: formspreeData
+                body: JSON.stringify(data)
             });
 
-            if (fallback.ok) {
-                formMessage.style.color = '#f59e0b';
-                formMessage.textContent = '✓ Sent via Formspree fallback';
-                contactForm.reset();
-            } else {
-                throw new Error('Formspree failed');
-            }
+            const result = await response.json();
 
-        } catch (fallbackError) {
-            formMessage.style.color = '#ef4444';
-            formMessage.textContent = '✗ Message failed on all systems';
-        }
-    }
+            if (response.ok && result.success) {
 
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Send me a message now!';
-    formMessage.style.display = 'block';
-});
-            // Process headers safely depending on which service fulfilled the request
-            const contentType = response.headers ? response.headers.get('content-type') || '' : '';
-            const result = contentType.includes('application/json')
-                ? await response.json()
-                : { message: response.text ? await response.text() : 'Service complete' };
+                backendSuccess = true;
 
-            if (response.ok) {
                 formMessage.style.color = '#10b981';
-                formMessage.textContent = '✓ Message sent successfully! Check your email for confirmation.';
+                formMessage.textContent = '✓ Sent via Nodemailer (Gmail)';
                 contactForm.reset();
+
             } else {
-                formMessage.style.color = '#ef4444';
-                formMessage.textContent = 'X ' + (result.error || result.message || Server error status: ${response.status});
+                console.log('Backend failed, switching to fallback');
             }
 
-        } catch (error) {
-            // --- Final Catchall: If an unexpected JavaScript exception broke execution flow ---
+        } catch (err) {
+            console.log('Backend unreachable:', err);
+        }
+
+        // STEP 2: FORMPSREE FALLBACK
+        if (!backendSuccess) {
+
             try {
+
                 const formspreeData = new URLSearchParams(data);
-                const ultimateFallback = await fetch(formspreeUrl, {
+
+                const fallback = await fetch(formspreeUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -371,23 +326,26 @@ if (contactForm) {
                     body: formspreeData
                 });
 
-                if (ultimateFallback.ok) {
-                    formMessage.style.color = '#10b981';
-                    formMessage.textContent = '✓ Message successfully dispatched via emergency Formspree route!';
+                if (fallback.ok) {
+
+                    formMessage.style.color = '#f59e0b';
+                    formMessage.textContent = '✓ Sent via Formspree fallback';
                     contactForm.reset();
+
                 } else {
-                    throw new Error('All systems failed');
+                    throw new Error('Formspree failed');
                 }
+
             } catch (fallbackError) {
+
                 formMessage.style.color = '#ef4444';
-                formMessage.textContent = 'X Error: All messaging routing options failed. Try again later.';
-                console.error('Total communication breakdown:', error, fallbackError);
+                formMessage.textContent = '✗ Message failed on all systems';
             }
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send me a message now!';
-            formMessage.style.display = 'block';
         }
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send me a message now!';
+        formMessage.style.display = 'block';
     });
 }
     </script>
