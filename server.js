@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/assets', express.static('assets'));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Serve Static Files
 app.use('/', express.static(__dirname));
