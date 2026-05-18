@@ -300,18 +300,22 @@ if (contactForm) {
 
                 formMessage.style.color = '#10b981';
                 formMessage.textContent = "Message sent successfully! I'll get back to you soon.";
-                formMessage.style.transition = 'opacity 0.5s ease';
-                        formMessage.style.opacity = '1';
-                        
+
+
+                                    formMessage.style.display = 'block';
+                    formMessage.style.opacity = '1';
+                    formMessage.style.transition = 'opacity 0.6s ease';
+                    
+                    setTimeout(() => {
+                        formMessage.style.opacity = '0';
+                    
                         setTimeout(() => {
-                            formMessage.style.opacity = '0';
-                        
-                            setTimeout(() => {
-                                formMessage.style.display = 'none';
-                                formMessage.textContent = '';
-                            }, 500);
-                        
-                        }, 10000);
+                            formMessage.style.display = 'none';
+                            formMessage.textContent = '';
+                        }, 600); // fade duration
+                    }, 800); // disappears trigger (less than 1 second)
+
+                
                 contactForm.reset();
 
             } else {
