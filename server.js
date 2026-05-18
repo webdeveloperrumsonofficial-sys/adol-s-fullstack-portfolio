@@ -7,14 +7,12 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend files
+// Serve static files from root folder
 app.use(express.static(__dirname));
 
 // Homepage
@@ -22,21 +20,17 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API Check Route
+// API test
 app.get('/api/hello', (req, res) => {
-    res.json({ status: "API is running on Vercel" });
+    res.json({
+        message: 'API working on Vercel'
+    });
 });
 
-// Contact form endpoint
+// Contact endpoint
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, message } = req.body;
-
-        if (!name || !email || !message) {
-            return res.status(400).json({
-                error: 'All fields are required'
-            });
-        }
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -46,58 +40,36 @@ app.post('/api/contact', async (req, res) => {
             }
         });
 
-        const adminMailOptions = {
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: process.env.EMAIL_USER,
-            subject: `New Contact Form Submission from ${name}`,
+            subject: `Message from ${name}`,
             html: `
-                <h2>New Message from Your Portfolio</h2>
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Message:</strong></p>
-                <p>${message.replace(/\n/g, '<br>')}</p>
+                <h2>Portfolio Contact</h2>
+                <p>${message}</p>
+                <p>${email}</p>
             `
-        };
+        });
 
-        const visitorMailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'We received your message!',
-            html: `
-                <h2>Thank you, ${name}!</h2>
-                <p>We received your message and will get back to you soon.</p>
-                <hr>
-                <p><strong>Your message:</strong></p>
-                <p>${message.replace(/\n/g, '<br>')}</p>
-            `
-        };
-
-        await transporter.sendMail(adminMailOptions);
-        await transporter.sendMail(visitorMailOptions);
-
-        res.status(200).json({
-            success: true,
-            message: 'Message sent successfully!'
+        res.json({
+            success: true
         });
 
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.log(error);
 
         res.status(500).json({
-            error: 'Failed to send message'
+            error: 'Mail failed'
         });
     }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'Server is running' });
-});
-
-// Local development only
+// LOCAL ONLY
 if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5001;
+
     app.listen(PORT, () => {
-        console.log(`Local server running on http://localhost:${PORT}`);
+        console.log(`Running on http://localhost:${PORT}`);
     });
 }
 
