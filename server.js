@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from root
+// Serve Static Files
 app.use('/', express.static(__dirname));
 
 // Home Route
@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// CSS Route
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, 'style.css'));
 });
@@ -29,106 +30,151 @@ app.get('/style.css', (req, res) => {
 // API Check Route
 app.get('/api/hello', (req, res) => {
     res.json({
-        status: "API is running on Vercel"
+        success: true,
+        status: 'API is running on Vercel'
     });
 });
 
-// Contact Form Endpoint
+// Health Check Route
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        status: 'Server is running'
+    });
+});
+
+// Contact Form Route
 app.post('/api/contact', async (req, res) => {
+
     try {
 
         const { name, email, message } = req.body;
 
-        // Validate input
+        // Validation
         if (!name || !email || !message) {
+
             return res.status(400).json({
+                success: false,
                 error: 'All fields are required'
             });
         }
 
-        // Email configuration
+        // Nodemailer Transporter
         const transporter = nodemailer.createTransport({
+
             service: 'gmail',
+
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD
+            },
+
+            tls: {
+                rejectUnauthorized: false
             }
         });
 
-        // Email to admin
+        // Verify Connection
+        await transporter.verify();
+
+        console.log('Nodemailer Ready');
+
+        // Email To Admin
         const adminMailOptions = {
-            from: process.env.EMAIL_USER,
+
+            from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+
             to: process.env.EMAIL_USER,
+
             subject: `New Contact Form Submission from ${name}`,
+
             html: `
-                <h2>New Message from Your Portfolio</h2>
+                <div style="font-family: Arial; padding: 20px;">
 
-                <p>
-                    <strong>Name:</strong> ${name}
-                </p>
+                    <h2>New Portfolio Contact Message</h2>
 
-                <p>
-                    <strong>Email:</strong> ${email}
-                </p>
+                    <p>
+                        <strong>Name:</strong> ${name}
+                    </p>
 
-                <p>
-                    <strong>Message:</strong>
-                </p>
+                    <p>
+                        <strong>Email:</strong> ${email}
+                    </p>
 
-                <p>
-                    ${message.replace(/\n/g, '<br>')}
-                </p>
+                    <p>
+                        <strong>Message:</strong>
+                    </p>
+
+                    <p>
+                        ${message.replace(/\n/g, '<br>')}
+                    </p>
+
+                </div>
             `
         };
 
-        // Confirmation email to visitor
+        // Confirmation Email To Visitor
         const visitorMailOptions = {
-            from: process.env.EMAIL_USER,
+
+            from: `"Adol Portfolio" <${process.env.EMAIL_USER}>`,
+
             to: email,
-            subject: 'We received your message!',
+
+            subject: 'Message Received Successfully',
+
             html: `
-                <h2>Thank you, ${name}!</h2>
+                <div style="font-family: Arial; padding: 20px;">
 
-                <p>
-                    We received your message and will get back to you as soon as possible.
-                </p>
+                    <h2>Hello ${name},</h2>
 
-                <hr>
+                    <p>
+                        Thank you for contacting me.
+                    </p>
 
-                <p>
-                    <strong>Your message:</strong>
-                </p>
+                    <p>
+                        I have received your message and will get back to you shortly.
+                    </p>
 
-                <p>
-                    ${message.replace(/\n/g, '<br>')}
-                </p>
+                    <hr>
+
+                    <h3>Your Message:</h3>
+
+                    <p>
+                        ${message.replace(/\n/g, '<br>')}
+                    </p>
+
+                </div>
             `
         };
 
-        // Send emails
-        await transporter.sendMail(adminMailOptions);
-        await transporter.sendMail(visitorMailOptions);
+        // Send Emails
+        const adminResponse = await transporter.sendMail(adminMailOptions);
 
+        console.log('Admin Email Sent:', adminResponse.messageId);
+
+        const visitorResponse = await transporter.sendMail(visitorMailOptions);
+
+        console.log('Visitor Email Sent:', visitorResponse.messageId);
+
+        // Success Response
         return res.status(200).json({
+
             success: true,
+
             message: 'Message sent successfully!'
         });
 
     } catch (error) {
 
-        console.error('Error sending email:', error);
+        console.error('FULL NODEMAILER ERROR:', error);
 
         return res.status(500).json({
-            error: 'Failed to send message. Please try again later.'
+
+            success: false,
+
+            error: error.message || 'Failed to send message'
         });
     }
-});
-
-// Health Check
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'Server is running'
-    });
 });
 
 // Local Development Only
@@ -155,5 +201,5 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Export for Vercel
+// Export For Vercel
 module.exports = app;
