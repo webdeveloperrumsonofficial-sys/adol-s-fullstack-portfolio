@@ -2,7 +2,6 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 dotenv.config();
 
@@ -13,16 +12,10 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname)));
 
 // // API Check Route
 app.get('/api/hello', (req, res) => {
     res.json({ status: "API is running on vercel" });
-});
-
-// // Serve frontend home page
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // // Contact form endpoint
@@ -44,7 +37,7 @@ app.post('/api/contact', async (req, res) => {
             }
         });
 
-        // Email to admin (FIXED: Backticks applied correctly to prevent Vercel string crash)
+        // Email to admin
         const adminMailOptions = {
             from: process.env.EMAIL_USER,
             to: process.env.EMAIL_USER,
@@ -94,7 +87,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'Server is running' });
 });
 
-// // Local development listener management (Ensures it won't crash on Vercel production)
+// // Local development listener management (Only runs locally)
 if (process.env.NODE_ENV !== 'production') {
     const server = app.listen(PORT, () => {
         console.log(Local server running on http://localhost:${PORT});
