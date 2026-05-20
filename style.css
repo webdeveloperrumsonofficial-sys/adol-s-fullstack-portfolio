@@ -224,6 +224,19 @@ body {
     background: rgba(255, 255, 255, 0.18);
 }
 
+.whatsapp-btn {
+    margin-top: 16px;
+    display: inline-flex;
+    padding: 12px 22px;
+    background: #25d366;
+    border-color: transparent;
+    color: #111;
+}
+
+.whatsapp-btn:hover {
+    background: #1ebe54;
+}
+
 .hero-social {
     display: flex;
     justify-content: center;
@@ -260,6 +273,15 @@ body {
 .social-links a:hover {
     transform: translateY(-2px);
     background: rgba(255, 255, 255, 0.18);
+}
+
+.social-links a[aria-label="WhatsApp"] {
+    background: #25d366;
+    color: #ffffff;
+}
+
+.social-links a[aria-label="WhatsApp"]:hover {
+    background: #1ebe54;
 }
 
 .social-links svg {
